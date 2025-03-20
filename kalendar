@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Календарь мероприятий</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: #111;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .calendar-container {
+            background: #000;
+            padding: 20px;
+            border-radius: 10px;
+            width: 320px;
+            text-align: center;
+        }
+        .month {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .arrow {
+            cursor: pointer;
+            font-size: 20px;
+            padding: 5px;
+        }
+        .days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            text-align: center;
+        }
+        .day {
+            padding: 5px;
+            border: 1px solid #fff;
+            cursor: pointer;
+            font-size: 16px;
+            position: relative;
+            transition: background-color 0.1s ease-in-out, transform 0.2s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            height: 28px;
+        }
+        .day:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+        .day.selected {
+            background-color: gold;
+            color: black;
+        }
+        .day span {
+            margin-top: 2px;
+        }
+        .day .event-dot {
+            width: 6px;
+            height: 6px;
+            background: gold;
+            border-radius: 50%;
+            margin-bottom: 2px;
+        }
+        .empty {
+            border: none;
+            cursor: default;
+        }
+        .event-box {
+            background: #222;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: none;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+        }
+        .event-box.show {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .weekday {
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="calendar-container">
+        <div class="month">
+            <span class="arrow" onclick="changeMonth(-1)">←</span>
+            <span id="monthYear">Март 2025</span>
+            <span class="arrow" onclick="changeMonth(1)">→</span>
+        </div>
+        <div class="weekdays">
+            <div class="weekday">ПН</div>
+            <div class="weekday">ВТ</div>
+            <div class="weekday">СР</div>
+            <div class="weekday">ЧТ</div>
+            <div class="weekday">ПТ</div>
+            <div class="weekday">СБ</div>
+            <div class="weekday">ВС</div>
+        </div>
+        <div class="days" id="calendarDays"></div>
+        <div class="event-box" id="eventDetails"></div>
+    </div>
+
+    <script>
+        const apiUrl = "https://script.google.com/macros/s/AKfycbyFjUlOStvLIev2tVNRBf_ers1WkdHt05k6t517PcbOoTx6LhMYmufX2ZP8E3PUrDYh/exec";
+        let currentMonth = 2;
+        let currentYear = 2025;
+        const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+        let eventsData = [];
+        let selectedDay = null;
+        
+        async function fetchEvents() {
+            const response = await fetch(apiUrl);
+            eventsData = await response.json();
+            renderCalendar();
+        }
+        
+        function changeMonth(step) {
+            currentMonth += step;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            } else if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            renderCalendar();
+        }
+        
+        function selectDay(element) {
+            if (selectedDay) {
+                selectedDay.classList.remove("selected");
+            }
+            selectedDay = element;
+            selectedDay.classList.add("selected");
+        }
+        
+        function renderCalendar() {
+            const calendarDays = document.getElementById("calendarDays");
+            const monthYear = document.getElementById("monthYear");
+            monthYear.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+            
+            let content = "";
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const offset = (firstDay === 0) ? 6 : firstDay - 1;
+            
+            for (let i = 0; i < offset; i++) {
+                content += '<div class="day empty"></div>';
+            }
+            
+            for (let i = 1; i <= daysInMonth; i++) {
+                const event = eventsData.find(e => new Date(e.date).toLocaleDateString('ru-RU') === `${('0' + i).slice(-2)}.${('0' + (currentMonth + 1)).slice(-2)}.${currentYear}`);
+                content += `<div class="day" onclick="selectDay(this); ${event ? `showEvent('${event.title}', '${event.description}', '${event.image}', '${event.time}')` : 'hideEvent()'}"><span>${i}</span>${event ? '<div class="event-dot"></div>' : ''}</div>`;
+            }
+            calendarDays.innerHTML = content;
+        }
+        
+        function showEvent(title, description, image, time) {
+            const eventDetails = document.getElementById("eventDetails");
+            eventDetails.innerHTML = `
+                <h3>${title}</h3>
+                <p>${description}</p>
+                <p>Время: ${time}</p>
+                <a href="${image}" target="_blank" style="display: inline-block; margin-top: 10px; padding: 8px 12px; background: gold; color: black; text-decoration: none; border-radius: 5px;">Купить билет</a>`;
+            eventDetails.classList.add("show");
+        }
+
+        fetchEvents();
+    </script>
+</body>
+</html>
