@@ -96,7 +96,7 @@ $cartQuantity = $isInCart ? $_SESSION['CART'][$productId] : 0;
                 <?php endif; ?>
 
                 <!-- Управление корзиной -->
-                <div class="product-cart-controls" data-product-id="<?= $productId ?>">
+                <div class="product-cart-controls" data-product-id="<?= $productId ?>" data-price="<?= $priceValue ?>">
                     <?php if ($isInCart): ?>
                         <div class="cart-quantity-controls">
                             <button class="cart-btn cart-btn-minus" data-action="decrease" data-product-id="<?= $productId ?>">-</button>
