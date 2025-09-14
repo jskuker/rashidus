@@ -125,7 +125,7 @@
     </div>
 
     <script>
-        const apiUrl = "https://script.google.com/macros/s/AKfycbyFjUlOStvLIev2tVNRBf_ers1WkdHt05k6t517PcbOoTx6LhMYmufX2ZP8E3PUrDYh/exec";
+        const apiUrl = "https://scri
         let currentMonth = 2;
         let currentYear = 2025;
         const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
