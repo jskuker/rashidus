@@ -52,7 +52,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateProductControls(productId, quantity) {
         const cartControls = document.querySelector('.product-cart-controls');
-        
+        if (!cartControls) return;
+
         if (quantity > 0) {
             // Показываем контролы количества
             cartControls.innerHTML = `
@@ -67,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
             addCartEventListeners(cartControls);
         } else {
             // Показываем кнопку "Добавить в корзину"
-            const price = cartControls.querySelector('.product-add-to-cart')?.dataset.price || '0';
+            const price = cartControls.dataset.price || cartControls.querySelector('.product-add-to-cart')?.dataset.price || '0';
             cartControls.innerHTML = `
                 <button class="product-add-to-cart cart-btn-add" data-product-id="${productId}" data-price="${price}">
                     Добавить в корзину
